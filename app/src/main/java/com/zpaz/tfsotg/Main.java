@@ -147,7 +147,9 @@ public class Main extends AppCompatActivity
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                httpURLConnection.disconnect();
+                if (httpURLConnection != null) {
+                    httpURLConnection.disconnect();
+                }
             }
             onPostExecute(responseAsString);
             return responseAsString;

@@ -30,11 +30,10 @@ public class Login extends AppCompatActivity {
     private EditText projectField;
     private EditText userField;
     private EditText patField;
-    static Button testBtn;
-    static Button patBtn;
-    static Button nextBtn;
-    String outPutString = "";
-    String baseUrl = "";
+    private Button testBtn;
+    private Button nextBtn;
+    private String outPutString = "";
+    private String baseUrl = "";
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -62,7 +61,7 @@ public class Login extends AppCompatActivity {
         patField = findViewById(R.id.patField);
         testBtn = findViewById(R.id.testBtn);
         nextBtn = findViewById(R.id.nextBtn);
-        patBtn = findViewById(R.id.patInfoBtn);
+        Button patBtn = findViewById(R.id.patInfoBtn);
         nextBtn.setEnabled(false);
         testBtn.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -195,7 +194,9 @@ public class Login extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                httpURLConnection.disconnect();
+                if (httpURLConnection != null) {
+                    httpURLConnection.disconnect();
+                }
             }
             onPostExecute(result);
             return result;
