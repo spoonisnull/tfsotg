@@ -1,19 +1,17 @@
 ## TFS On The Go
 
-MS Team Foundation Server Android client
+MS Team Foundation Server Android client - if there is a rest api, there should be an app
 
-If there is a rest api, there should be an app, too.
+##### TFSOTG can:
+- View build logs
+- View release logs
 
-TFSOTG is:
-- secure
-- lightweight
-- experimental
+##### TFSOTG is:
+- Secure
+- Lightweight
+- Experimental
 
-TFSOTG is not:
-- official
-- a complete replacement of the web app
-
-TFSOTG can:
-- view build processes & logs
-- view release processes & logs
+##### TFSOTG is not:
+- Official
+- A complete replacement of the web app
 
