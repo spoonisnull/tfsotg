@@ -3,7 +3,7 @@
 MS Team Foundation Server Android client - if there is a rest api, there should be an app
 
 ##### TFSOTG can:
-- View build logs
+- View tfsBuild logs
 - View release logs
 
 ##### TFSOTG is:

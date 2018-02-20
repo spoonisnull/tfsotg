@@ -1,5 +1,6 @@
 package com.zpaz.tfsotg;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,7 +13,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -20,6 +26,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Main extends AppCompatActivity
@@ -30,6 +40,9 @@ public class Main extends AppCompatActivity
     String creds;
     String baseUrl;
     String username;
+    ListView mainList;
+    ListAdapter listAdapter;
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +52,7 @@ public class Main extends AppCompatActivity
         creds = this.getIntent().getExtras().get("Creds").toString();
         baseUrl = this.getIntent().getExtras().get("BaseUrl").toString();
         username = this.getIntent().getExtras().get("UserName").toString();
-        display = findViewById(R.id.display);
+        context = this;
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -55,6 +68,8 @@ public class Main extends AppCompatActivity
 
         TextView userLabel = navigationView.getHeaderView(0).findViewById(R.id.mainUserLabel);
         userLabel.setText(username);
+
+        mainList = findViewById(R.id.mainList);
     }
 
     @Override
@@ -109,7 +124,7 @@ public class Main extends AppCompatActivity
     private String buildUrl(String action) {
         switch (action) {
             case "build":
-                return baseUrl + "_apis/build/builds?$top=10&api-version=2.0";
+                return baseUrl + "_apis/build/builds?$top=100&api-version=2.0";
             case "release":
                 return baseUrl + "_apis/Release/releases";
             default:
@@ -159,17 +174,42 @@ public class Main extends AppCompatActivity
         protected void onPostExecute(String result) {
             try {
                 jsonInView = new JSONObject(result);
+                updateView(display, jsonInView);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            updateView(display, result);
         }
 
-        private void updateView(final TextView display, final String text){
+        private void updateView(final TextView display, final JSONObject text) throws JSONException {
+            final Map<String,ArrayList<TfsBuild>> buildDefs = new HashMap<>();
+            JSONArray builds = text.getJSONArray("value");
+
+            for(int i = 0; i < builds.length(); i ++) {
+
+                JSONObject buildJson = builds.getJSONObject(i);
+
+                String buildDefName = buildJson.getJSONObject("definition").getString("name");
+                String buildNumber = buildJson.getString("buildNumber");
+                String buildId = buildJson.getString("id");
+
+                TfsBuild tfsBuild = new TfsBuild(buildId, buildNumber, buildDefName);
+
+                if(buildDefs.containsKey(buildDefName)){
+                    buildDefs.get(buildDefName).add(tfsBuild);
+                } else {
+                    ArrayList<TfsBuild> listOfTfsBuilds = new ArrayList<>();
+                    listOfTfsBuilds.add(tfsBuild);
+                    buildDefs.put(buildDefName, listOfTfsBuilds);
+                }
+            }
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    display.setText(text);
+                    List<String> asList = new ArrayList<>();
+                    asList.addAll(buildDefs.keySet());
+                    listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, asList);
+                    mainList.setAdapter(listAdapter);
                 }
             });
         }
