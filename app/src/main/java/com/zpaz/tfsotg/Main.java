@@ -21,28 +21,29 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Main extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     static JSONObject jsonInView;
-    TextView display;
     String creds;
     String baseUrl;
     String username;
     ListView mainList;
     ListAdapter listAdapter;
     Context context;
+
+    enum QueryActions {GetBuilds,GetReleases}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,38 +112,43 @@ public class Main extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.menuBuilds) {
-            new requestFromTfs().execute(buildUrl("build"),creds);
+            new requestFromTfs().execute(QueryActions.GetBuilds, creds);
         } else if (id == R.id.menuReleases) {
-            new requestFromTfs().execute(buildUrl("release"),creds);
+            new requestFromTfs().execute(QueryActions.GetReleases, creds);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
-    private String buildUrl(String action) {
+    private String buildUrl(QueryActions action) {
         switch (action) {
-            case "build":
+            case GetBuilds:
                 return baseUrl + "_apis/build/builds?$top=100&api-version=2.0";
-            case "release":
+            case GetReleases:
                 return baseUrl + "_apis/Release/releases";
             default:
                 return baseUrl + "_apis/build/builds?definitions=25&statusFilter=completed&$top=1&api-version=2.0";
         }
     }
-    private class requestFromTfs extends AsyncTask<String, String, String> {
+    private class requestFromTfs extends AsyncTask<Object, String, String> {
+
+        QueryActions action;
 
         @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
-        protected String doInBackground(String... urlString) {
-            String response = "";
+        protected String doInBackground(Object... params) {
+
+            action = (QueryActions) params[0];
+
+            String response;
             String responseAsString = "";
 
             HttpURLConnection httpURLConnection = null;
             try {
-                URL url = new URL(urlString[0]);
-                String credsEncoded = urlString[1];
+                URL url = new URL(buildUrl(action));
+                String credsEncoded = params[1].toString();
                 httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setRequestMethod("GET");
                 httpURLConnection.setRequestProperty("Authorization", "Basic " + credsEncoded);
@@ -150,7 +156,7 @@ public class Main extends AppCompatActivity
 
                 response = httpURLConnection.getResponseMessage();
 
-                BufferedReader reader = null;
+                BufferedReader reader;
                 if (response.equals("OK")) {
                     reader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
                 } else {
@@ -166,49 +172,74 @@ public class Main extends AppCompatActivity
                     httpURLConnection.disconnect();
                 }
             }
-            onPostExecute(responseAsString);
+
+            if(!responseAsString.equals("")){
+                onPostExecute(responseAsString);
+            }
             return responseAsString;
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String response) {
             try {
-                jsonInView = new JSONObject(result);
-                updateView(display, jsonInView);
+                LinkedList queuedEntities = ParseResponse(response);
+                updateView(queuedEntities);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
 
-        private void updateView(final TextView display, final JSONObject text) throws JSONException {
-            final Map<String,ArrayList<TfsBuild>> buildDefs = new HashMap<>();
-            JSONArray builds = text.getJSONArray("value");
-
-            for(int i = 0; i < builds.length(); i ++) {
-
-                JSONObject buildJson = builds.getJSONObject(i);
-
-                String buildDefName = buildJson.getJSONObject("definition").getString("name");
-                String buildNumber = buildJson.getString("buildNumber");
-                String buildId = buildJson.getString("id");
-
-                TfsBuild tfsBuild = new TfsBuild(buildId, buildNumber, buildDefName);
-
-                if(buildDefs.containsKey(buildDefName)){
-                    buildDefs.get(buildDefName).add(tfsBuild);
-                } else {
-                    ArrayList<TfsBuild> listOfTfsBuilds = new ArrayList<>();
-                    listOfTfsBuilds.add(tfsBuild);
-                    buildDefs.put(buildDefName, listOfTfsBuilds);
-                }
+        private LinkedList ParseResponse(String response) throws JSONException {
+            switch (action){
+                case GetBuilds:
+                    return GetTfsBuilds(response);
+                case GetReleases:
+                    return GetTfsReleases(response);
+                default:
+                    return new LinkedList<>();
             }
+        }
+
+        private LinkedList GetTfsBuilds(String response) throws JSONException {
+            JSONArray builds = new JSONObject(response).getJSONArray("value");
+
+            LinkedList<TfsBuild> buildList = new LinkedList<>();
+            for(int i = 0; i < builds.length(); i ++){
+
+                JSONObject currentJson = builds.getJSONObject(i);
+                TfsBuild current = new TfsBuild(
+                        currentJson.getString("id"),
+                        currentJson.getString("buildNumber"),
+                        currentJson.getJSONObject("definition").getString("name"));
+
+                current.setUrl(currentJson.getString("url"));
+                current.setSourceVersion(currentJson.getString("sourceVersion"));
+                current.setSourceBranch(currentJson.getString("sourceBranch"));
+                current.setFinishTime(currentJson.getString("finishTime"));
+                current.setCreatedBy(currentJson.getJSONObject("requestedFor").getString("displayName"));
+                current.setCreatedOn(currentJson.getString("queueTime"));
+                current.setStartTime(currentJson.getString("startTime"));
+                current.setLogsUrl(currentJson.getJSONObject("logs").getString("url"));
+                current.setResult(currentJson.getString("result"));
+                current.setStatus(currentJson.getString("status"));
+                current.setModifiedBy(currentJson.getJSONObject("lastChangedBy").getString("displayName"));
+                current.setModifiedOn(currentJson.getString("lastChangedDate"));
+
+                buildList.add(current);
+            }
+            return buildList;
+        }
+
+        private LinkedList GetTfsReleases(String response){
+            return new LinkedList();
+        }
+
+        private void updateView(final LinkedList list) throws JSONException {
 
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    List<String> asList = new ArrayList<>();
-                    asList.addAll(buildDefs.keySet());
-                    listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, asList);
+                    listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
                     mainList.setAdapter(listAdapter);
                 }
             });

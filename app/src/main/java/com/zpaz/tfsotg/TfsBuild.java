@@ -4,7 +4,7 @@ package com.zpaz.tfsotg;
  * Created by zsolt on 20/02/18.
  */
 
-public class TfsBuild {
+public class TfsBuild implements TfsQueuedEntity {
 
     private String id;
     private String buildNumber;
@@ -13,17 +13,24 @@ public class TfsBuild {
     private String sourceVersion;
     private String sourceBranch;
     private String finishTime;
-    private String requestedBy;
-    private String queueTime;
+    private String createdBy;
+    private String createdOn;
     private String startTime;
     private String logsUrl;
     private String result;
     private String status;
+    private String modifiedBy;
+    private String modifiedOn;
 
     TfsBuild(String id, String buildNumber, String buildDefinition) {
         this.id = id;
         this.buildNumber = buildNumber;
         this.buildDefinition = buildDefinition;
+    }
+
+    @Override
+    public String toString() {
+        return "[" + result + "] " + buildDefinition + "\n" + buildNumber + " (" + createdBy + ")";
     }
 
     public String getId() {
@@ -82,20 +89,20 @@ public class TfsBuild {
         this.finishTime = finishTime;
     }
 
-    public String getRequestedBy() {
-        return requestedBy;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setRequestedBy(String requestedBy) {
-        this.requestedBy = requestedBy;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
-    public String getQueueTime() {
-        return queueTime;
+    public String getCreatedOn() {
+        return createdOn;
     }
 
-    public void setQueueTime(String queueTime) {
-        this.queueTime = queueTime;
+    public void setCreatedOn(String createdOn) {
+        this.createdOn = createdOn;
     }
 
     public String getStartTime() {
@@ -128,5 +135,21 @@ public class TfsBuild {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
+    }
+
+    public String getModifiedOn() {
+        return modifiedOn;
+    }
+
+    public void setModifiedOn(String modifiedOn) {
+        this.modifiedOn = modifiedOn;
     }
 }
