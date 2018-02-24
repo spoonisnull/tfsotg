@@ -30,7 +30,12 @@ public class TfsBuild implements TfsQueuedEntity {
 
     @Override
     public String toString() {
-        return "[" + result + "] " + buildDefinition + "\n" + buildNumber + " (" + createdBy + ")";
+        return buildDefinition + " [" + result + "]" + "\n"
+        + buildNumber + " (" + createdBy + ")" + "\n"
+        + "queued: " + createdOn + "\n"
+        + "started: " + startTime + "\n"
+        + "finished: " + finishTime + "\n";
+
     }
 
     public String getId() {
