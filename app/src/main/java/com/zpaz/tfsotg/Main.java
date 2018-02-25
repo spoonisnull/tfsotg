@@ -1,9 +1,11 @@
 package com.zpaz.tfsotg;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -13,69 +15,76 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.json.JSONArray;
+import com.zpaz.tfsotg.Interfaces.ListedEntity;
+import com.zpaz.tfsotg.Release.DetailedRelease;
+import com.zpaz.tfsotg.Release.ListedRelease;
+import com.zpaz.tfsotg.Release.ViewReleaseDetails;
+import com.zpaz.tfsotg.Utils.QueryActions;
+
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.stream.Collectors;
 
-public class Main extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+import static com.zpaz.tfsotg.Build.ListedBuild.GetTfsBuilds;
+import static com.zpaz.tfsotg.Release.DetailedRelease.GetDetailedReleaseFromJson;
+import static com.zpaz.tfsotg.Release.ListedRelease.GetTfsReleases;
 
-    static JSONObject jsonInView;
-    String creds;
+public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    String credentials;
     String baseUrl;
     String username;
     ListView mainList;
     ListAdapter listAdapter;
+    LinkedList queueList;
     Context context;
-
-    enum QueryActions {GetBuilds,GetReleases}
+    int itemsToShow = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("TFS on the go");
-        creds = this.getIntent().getExtras().get("Creds").toString();
+        credentials = this.getIntent().getExtras().get("Creds").toString();
         baseUrl = this.getIntent().getExtras().get("BaseUrl").toString();
         username = this.getIntent().getExtras().get("UserName").toString();
         context = this;
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         TextView userLabel = navigationView.getHeaderView(0).findViewById(R.id.mainUserLabel);
         userLabel.setText(username);
 
+        queueList = new LinkedList<ListedEntity>();
         mainList = findViewById(R.id.mainList);
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -107,14 +116,14 @@ public class Main extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.menuBuilds) {
-            new requestFromTfs().execute(QueryActions.GetBuilds, creds);
+            new requestFromTfs().execute(QueryActions.GetBuilds, credentials);
         } else if (id == R.id.menuReleases) {
-            new requestFromTfs().execute(QueryActions.GetReleases, creds);
+            new requestFromTfs().execute(QueryActions.GetReleases, credentials);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -122,18 +131,23 @@ public class Main extends AppCompatActivity
         return true;
     }
 
-    private String buildUrl(QueryActions action) {
+    private String buildUrl(QueryActions action, String param) {
         switch (action) {
             case GetBuilds:
-                return baseUrl + "_apis/build/builds?$top=100&api-version=2.0";
+                return baseUrl + "_apis/build/builds?$top=" + itemsToShowStringified() + "&api-version=2.0";
             case GetReleases:
                 return baseUrl + "_apis/Release/releases";
+            case GetReleaseDetails:
+                return baseUrl + "_apis/Release/releases" + param;
             default:
-                return baseUrl + "_apis/build/builds?definitions=25&statusFilter=completed&$top=1&api-version=2.0";
+                return baseUrl + "_apis/Release/releases";
         }
     }
-    private class requestFromTfs extends AsyncTask<Object, String, String> {
 
+    private String itemsToShowStringified(){
+        return "" + itemsToShow;
+    }
+    private class requestFromTfs extends AsyncTask<Object, String, String> {
         QueryActions action;
 
         @RequiresApi(api = Build.VERSION_CODES.N)
@@ -143,12 +157,16 @@ public class Main extends AppCompatActivity
             action = (QueryActions) params[0];
 
             String response;
-            String responseAsString = "";
+            String returnedObject = "";
+            String optionalUrlParam = "";
+            if(params.length > 2){
+                optionalUrlParam = "/" + params[2].toString();
+            }
 
             HttpURLConnection httpURLConnection = null;
             try {
-                URL url = new URL(buildUrl(action));
                 String credsEncoded = params[1].toString();
+                URL url = new URL(buildUrl(action, optionalUrlParam));
                 httpURLConnection = (HttpURLConnection) url.openConnection();
                 httpURLConnection.setRequestMethod("GET");
                 httpURLConnection.setRequestProperty("Authorization", "Basic " + credsEncoded);
@@ -163,7 +181,7 @@ public class Main extends AppCompatActivity
                     reader = new BufferedReader(new InputStreamReader(httpURLConnection.getErrorStream()));
                 }
 
-                responseAsString = reader.lines().collect(Collectors.joining());
+                returnedObject = reader.lines().collect(Collectors.joining());
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -172,75 +190,65 @@ public class Main extends AppCompatActivity
                     httpURLConnection.disconnect();
                 }
             }
-
-            if(!responseAsString.equals("")){
-                onPostExecute(responseAsString);
-            }
-            return responseAsString;
+            return returnedObject;
         }
 
         @Override
         protected void onPostExecute(String response) {
             try {
-                LinkedList queuedEntities = ParseResponse(response);
-                updateView(queuedEntities);
+                switch (action){
+                    case GetBuilds:
+                        queueList = GetTfsBuilds(response);
+                        updateView(queueList);
+                        break;
+                    case GetReleases:
+                        queueList = GetTfsReleases(response);
+                        updateView(queueList);
+                        break;
+                    case GetReleaseDetails:
+                        Intent viewReleaseIntent = new Intent(getApplicationContext(), ViewReleaseDetails.class);
+                        viewReleaseIntent.putExtra("release", response);
+                        startActivity(viewReleaseIntent);
+                        break;
+                }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
 
-        private LinkedList ParseResponse(String response) throws JSONException {
-            switch (action){
-                case GetBuilds:
-                    return GetTfsBuilds(response);
-                case GetReleases:
-                    return GetTfsReleases(response);
-                default:
-                    return new LinkedList<>();
-            }
-        }
-
-        private LinkedList GetTfsBuilds(String response) throws JSONException {
-            JSONArray builds = new JSONObject(response).getJSONArray("value");
-
-            LinkedList<TfsBuild> buildList = new LinkedList<>();
-            for(int i = 0; i < builds.length(); i ++){
-
-                JSONObject currentJson = builds.getJSONObject(i);
-                TfsBuild current = new TfsBuild(
-                        currentJson.getString("id"),
-                        currentJson.getString("buildNumber"),
-                        currentJson.getJSONObject("definition").getString("name"));
-
-                current.setUrl(currentJson.getString("url"));
-                current.setSourceVersion(currentJson.getString("sourceVersion"));
-                current.setSourceBranch(currentJson.getString("sourceBranch"));
-                current.setFinishTime(currentJson.getString("finishTime"));
-                current.setCreatedBy(currentJson.getJSONObject("requestedFor").getString("displayName"));
-                current.setCreatedOn(currentJson.getString("queueTime"));
-                current.setStartTime(currentJson.getString("startTime"));
-                current.setLogsUrl(currentJson.getJSONObject("logs").getString("url"));
-                current.setResult(currentJson.getString("result"));
-                current.setStatus(currentJson.getString("status"));
-                current.setModifiedBy(currentJson.getJSONObject("lastChangedBy").getString("displayName"));
-                current.setModifiedOn(currentJson.getString("lastChangedDate"));
-
-                buildList.add(current);
-            }
-            return buildList;
-        }
-
-        private LinkedList GetTfsReleases(String response){
-            return new LinkedList();
-        }
-
         private void updateView(final LinkedList list) throws JSONException {
-
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
+                    addRelevantListenerToListView();
                     mainList.setAdapter(listAdapter);
+                }
+            });
+        }
+
+        private void addRelevantListenerToListView(){
+            switch (action){
+                case GetReleases:
+                    addReleaseDetailsListener();
+                    break;
+                case GetBuilds:
+                    mainList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            return;
+                        }
+                    });
+                    break;
+            }
+        }
+
+        private void addReleaseDetailsListener(){
+            mainList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    ListedRelease selectedRelease = (ListedRelease) queueList.get(position);
+                    new requestFromTfs().execute(QueryActions.GetReleaseDetails, credentials, selectedRelease.getId());
                 }
             });
         }

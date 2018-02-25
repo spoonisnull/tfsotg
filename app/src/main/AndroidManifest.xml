@@ -21,6 +21,10 @@
         <activity
             android:name=".Main"
             android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Release.ViewReleaseDetails"
+            android:label="@string/title_activity_release_details"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

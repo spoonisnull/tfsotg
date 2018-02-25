@@ -1,28 +1,29 @@
-package com.zpaz.tfsotg;
+package com.zpaz.tfsotg.Build;
+
+import com.zpaz.tfsotg.Interfaces.ListedEntity;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.LinkedList;
 
 /**
  * Created by zsolt on 20/02/18.
  */
 
-public class TfsBuild implements TfsQueuedEntity {
+public class ListedBuild implements ListedEntity {
 
     private String id;
     private String buildNumber;
     private String buildDefinition;
-    private String url;
-    private String sourceVersion;
-    private String sourceBranch;
     private String finishTime;
     private String createdBy;
     private String createdOn;
     private String startTime;
-    private String logsUrl;
     private String result;
-    private String status;
-    private String modifiedBy;
-    private String modifiedOn;
 
-    TfsBuild(String id, String buildNumber, String buildDefinition) {
+    private ListedBuild(String id, String buildNumber, String buildDefinition) {
         this.id = id;
         this.buildNumber = buildNumber;
         this.buildDefinition = buildDefinition;
@@ -31,12 +32,35 @@ public class TfsBuild implements TfsQueuedEntity {
     @Override
     public String toString() {
         return buildDefinition + " [" + result + "]" + "\n"
-        + buildNumber + " (" + createdBy + ")" + "\n"
-        + "queued: " + createdOn + "\n"
-        + "started: " + startTime + "\n"
-        + "finished: " + finishTime + "\n";
+                + buildNumber + " (" + createdBy + ")" + "\n"
+                + "Queued:   " + createdOn + "\n"
+                + "Started:  " + startTime + "\n"
+                + "Finished: " + finishTime;
 
     }
+
+    public static LinkedList GetTfsBuilds(String response) throws JSONException {
+        JSONArray builds = new JSONObject(response).getJSONArray("value");
+        LinkedList<ListedBuild> buildList = new LinkedList<>();
+        for (int i = 0; i < builds.length(); i++) {
+            buildList.add(parseBuildFromResponse(builds.getJSONObject(i)));
+        }
+        return buildList;
+    }
+
+    private static ListedBuild parseBuildFromResponse(JSONObject tfsBuildJson) throws JSONException {
+        ListedBuild build = new ListedBuild(
+                tfsBuildJson.getString("id"),
+                tfsBuildJson.getString("buildNumber"),
+                tfsBuildJson.getJSONObject("definition").getString("name"));
+        build.setFinishTime(tfsBuildJson.getString("finishTime"));
+        build.setCreatedBy(tfsBuildJson.getJSONObject("requestedFor").getString("displayName"));
+        build.setCreatedOn(tfsBuildJson.getString("queueTime"));
+        build.setStartTime(tfsBuildJson.getString("startTime"));
+        build.setResult(tfsBuildJson.getString("result"));
+        return build;
+    }
+
 
     public String getId() {
         return id;
@@ -60,34 +84,6 @@ public class TfsBuild implements TfsQueuedEntity {
 
     public void setBuildDefinition(String buildDefinition) {
         this.buildDefinition = buildDefinition;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getSourceVersion() {
-        return sourceVersion;
-    }
-
-    public void setSourceVersion(String sourceVersion) {
-        this.sourceVersion = sourceVersion;
-    }
-
-    public String getSourceBranch() {
-        return sourceBranch;
-    }
-
-    public void setSourceBranch(String sourceBranch) {
-        this.sourceBranch = sourceBranch;
-    }
-
-    public String getFinishTime() {
-        return finishTime;
     }
 
     public void setFinishTime(String finishTime) {
@@ -118,43 +114,11 @@ public class TfsBuild implements TfsQueuedEntity {
         this.startTime = startTime;
     }
 
-    public String getLogsUrl() {
-        return logsUrl;
-    }
-
-    public void setLogsUrl(String logsUrl) {
-        this.logsUrl = logsUrl;
-    }
-
     public String getResult() {
         return result;
     }
 
     public void setResult(String result) {
         this.result = result;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getModifiedBy() {
-        return modifiedBy;
-    }
-
-    public void setModifiedBy(String modifiedBy) {
-        this.modifiedBy = modifiedBy;
-    }
-
-    public String getModifiedOn() {
-        return modifiedOn;
-    }
-
-    public void setModifiedOn(String modifiedOn) {
-        this.modifiedOn = modifiedOn;
     }
 }
