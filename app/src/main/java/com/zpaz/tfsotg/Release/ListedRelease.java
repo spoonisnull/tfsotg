@@ -28,7 +28,7 @@ public class ListedRelease implements ListedEntity {
 
     @Override
     public String toString() {
-        return releaseDefinition + "[" + status + "]" + "\n"
+        return releaseDefinition + "\n"
         + name + " (" + createdBy + ")" + "\n"
         + "Queued:   " + createdOn;
     }

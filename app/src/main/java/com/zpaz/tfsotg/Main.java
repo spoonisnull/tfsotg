@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import static com.zpaz.tfsotg.Build.ListedBuild.GetTfsBuilds;
 import static com.zpaz.tfsotg.Release.DetailedRelease.GetDetailedReleaseFromJson;
 import static com.zpaz.tfsotg.Release.ListedRelease.GetTfsReleases;
+import static com.zpaz.tfsotg.Utils.QueryActions.*;
 
 public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -51,7 +52,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     ListAdapter listAdapter;
     LinkedList queueList;
     Context context;
-    int itemsToShow = 50;
+    int itemsToShow = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         queueList = new LinkedList<ListedEntity>();
         mainList = findViewById(R.id.mainList);
+
+        new requestFromTfs().execute(GetBuilds, credentials);
     }
 
     @Override
@@ -121,9 +124,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         int id = item.getItemId();
 
         if (id == R.id.menuBuilds) {
-            new requestFromTfs().execute(QueryActions.GetBuilds, credentials);
+            new requestFromTfs().execute(GetBuilds, credentials);
         } else if (id == R.id.menuReleases) {
-            new requestFromTfs().execute(QueryActions.GetReleases, credentials);
+            new requestFromTfs().execute(GetReleases, credentials);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -139,6 +142,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 return baseUrl + "_apis/Release/releases";
             case GetReleaseDetails:
                 return baseUrl + "_apis/Release/releases" + param;
+            case GetBuildDetails:
+                return baseUrl + "_apis/build/builds" + param;
             default:
                 return baseUrl + "_apis/Release/releases";
         }
@@ -222,9 +227,21 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 public void run() {
                     listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
                     addRelevantListenerToListView();
+                    changeTitle();
                     mainList.setAdapter(listAdapter);
                 }
             });
+        }
+
+        private void changeTitle(){
+            switch (action){
+                case GetBuilds:
+                    setTitle("Builds");
+                    break;
+                case GetReleases:
+                    setTitle("Releases");
+                    break;
+            }
         }
 
         private void addRelevantListenerToListView(){
@@ -248,7 +265,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     ListedRelease selectedRelease = (ListedRelease) queueList.get(position);
-                    new requestFromTfs().execute(QueryActions.GetReleaseDetails, credentials, selectedRelease.getId());
+                    new requestFromTfs().execute(GetReleaseDetails, credentials, selectedRelease.getId());
                 }
             });
         }

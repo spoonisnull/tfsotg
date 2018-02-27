@@ -3,4 +3,8 @@
     <color name="colorPrimary">#0078D7</color>
     <color name="colorPrimaryDark">#005A9E</color>
     <color name="colorAccent">#E81123</color>
+    <color name="tfsGreen">#107C10</color>
+    <color name="tfsOrange">#F8A800</color>
+    <color name="tfsRed">#DA0A00</color>
+    <color name="tfsGray">#999999</color>
 </resources>

@@ -5,7 +5,6 @@ package com.zpaz.tfsotg.Interfaces;
  */
 
 public interface ListedEntity {
-    String getId();
     String getCreatedBy();
     String getCreatedOn();
 }

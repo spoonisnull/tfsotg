@@ -3,9 +3,51 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.zpaz.tfsotg.Release.ViewReleaseDetails"
     tools:showIn="@layout/activity_release_details">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/relDefLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Release definition" />
+
+        <TextView
+            android:id="@+id/relDefDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="release definition"
+            android:textAlignment="viewStart"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/relCreatedLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Created" />
+
+        <TextView
+            android:id="@+id/relCreatedDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium"
+            android:textStyle="bold"
+            tools:text="created by, at" />
+
+        <LinearLayout
+            android:id="@+id/environmentsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"></LinearLayout>
+
+    </LinearLayout>
 </android.support.v4.widget.NestedScrollView>

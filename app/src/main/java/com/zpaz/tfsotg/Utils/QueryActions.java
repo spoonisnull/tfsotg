@@ -7,5 +7,6 @@ package com.zpaz.tfsotg.Utils;
 public enum QueryActions {
     GetBuilds,
     GetReleases,
-    GetReleaseDetails
+    GetReleaseDetails,
+    GetBuildDetails
 }

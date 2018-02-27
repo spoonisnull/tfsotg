@@ -14,7 +14,6 @@ import java.util.LinkedList;
 
 public class ListedBuild implements ListedEntity {
 
-    private String id;
     private String buildNumber;
     private String buildDefinition;
     private String finishTime;
@@ -24,7 +23,6 @@ public class ListedBuild implements ListedEntity {
     private String result;
 
     private ListedBuild(String id, String buildNumber, String buildDefinition) {
-        this.id = id;
         this.buildNumber = buildNumber;
         this.buildDefinition = buildDefinition;
     }
@@ -61,14 +59,6 @@ public class ListedBuild implements ListedEntity {
         return build;
     }
 
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getBuildNumber() {
         return buildNumber;
