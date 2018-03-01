@@ -22,11 +22,12 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.zpaz.tfsotg.Build.ListedBuild;
+import com.zpaz.tfsotg.Build.ViewBuildDetails;
 import com.zpaz.tfsotg.Interfaces.ListedEntity;
-import com.zpaz.tfsotg.Release.DetailedRelease;
 import com.zpaz.tfsotg.Release.ListedRelease;
 import com.zpaz.tfsotg.Release.ViewReleaseDetails;
-import com.zpaz.tfsotg.Utils.QueryActions;
+import com.zpaz.tfsotg.Enums.QueryActions;
 
 import org.json.JSONException;
 
@@ -39,9 +40,8 @@ import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 import static com.zpaz.tfsotg.Build.ListedBuild.GetTfsBuilds;
-import static com.zpaz.tfsotg.Release.DetailedRelease.GetDetailedReleaseFromJson;
 import static com.zpaz.tfsotg.Release.ListedRelease.GetTfsReleases;
-import static com.zpaz.tfsotg.Utils.QueryActions.*;
+import static com.zpaz.tfsotg.Enums.QueryActions.*;
 
 public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -143,7 +143,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             case GetReleaseDetails:
                 return baseUrl + "_apis/Release/releases" + param;
             case GetBuildDetails:
-                return baseUrl + "_apis/build/builds" + param;
+                return baseUrl + "_apis/build/builds" + param + "/timeline?api-version=2.0";
             default:
                 return baseUrl + "_apis/Release/releases";
         }
@@ -206,6 +206,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                         queueList = GetTfsBuilds(response);
                         updateView(queueList);
                         break;
+                    case GetBuildDetails:
+                        Intent viewBuildIntent = new Intent(getApplicationContext(), ViewBuildDetails.class);
+                        viewBuildIntent.putExtra("build", response);
+                        startActivity(viewBuildIntent);
+                        break;
                     case GetReleases:
                         queueList = GetTfsReleases(response);
                         updateView(queueList);
@@ -250,12 +255,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                     addReleaseDetailsListener();
                     break;
                 case GetBuilds:
-                    mainList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            return;
-                        }
-                    });
+                    addBuildDetailsListener();
                     break;
             }
         }
@@ -266,6 +266,16 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     ListedRelease selectedRelease = (ListedRelease) queueList.get(position);
                     new requestFromTfs().execute(GetReleaseDetails, credentials, selectedRelease.getId());
+                }
+            });
+        }
+
+        private void addBuildDetailsListener(){
+            mainList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    ListedBuild selectedBuild = (ListedBuild) queueList.get(position);
+                    new requestFromTfs().execute(GetBuildDetails, credentials, String.valueOf(selectedBuild.getId()));
                 }
             });
         }

@@ -1,6 +1,8 @@
 package com.zpaz.tfsotg.Build;
 
 import com.zpaz.tfsotg.Interfaces.ListedEntity;
+import com.zpaz.tfsotg.Utils.DateTimeParser;
+import com.zpaz.tfsotg.Utils.JsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,6 +16,9 @@ import java.util.LinkedList;
 
 public class ListedBuild implements ListedEntity {
 
+    private static JsonParser parser;
+    private DateTimeParser dateTimeParser;
+    private int id;
     private String buildNumber;
     private String buildDefinition;
     private String finishTime;
@@ -22,19 +27,21 @@ public class ListedBuild implements ListedEntity {
     private String startTime;
     private String result;
 
-    private ListedBuild(String id, String buildNumber, String buildDefinition) {
+    private ListedBuild(int id, String buildNumber, String buildDefinition) {
         this.buildNumber = buildNumber;
         this.buildDefinition = buildDefinition;
+        this.id = id;
+        parser = new JsonParser();
+        dateTimeParser = new DateTimeParser();
     }
 
     @Override
     public String toString() {
         return buildDefinition + " [" + result + "]" + "\n"
                 + buildNumber + " (" + createdBy + ")" + "\n"
-                + "Queued:   " + createdOn + "\n"
-                + "Started:  " + startTime + "\n"
-                + "Finished: " + finishTime;
-
+                + "Queued: " + dateTimeParser.parseDateFromDateTimeString(createdOn) + "@" + dateTimeParser.parseTimeFromDateTimeString(createdOn) + "\n"
+                + "Started: " + dateTimeParser.parseDateFromDateTimeString(startTime) + "@" + dateTimeParser.parseTimeFromDateTimeString(startTime) + "\n"
+                + "Finished: " + dateTimeParser.parseDateFromDateTimeString(finishTime) + "@" + dateTimeParser.parseTimeFromDateTimeString(finishTime);
     }
 
     public static LinkedList GetTfsBuilds(String response) throws JSONException {
@@ -48,17 +55,24 @@ public class ListedBuild implements ListedEntity {
 
     private static ListedBuild parseBuildFromResponse(JSONObject tfsBuildJson) throws JSONException {
         ListedBuild build = new ListedBuild(
-                tfsBuildJson.getString("id"),
+                tfsBuildJson.getInt("id"),
                 tfsBuildJson.getString("buildNumber"),
                 tfsBuildJson.getJSONObject("definition").getString("name"));
-        build.setFinishTime(tfsBuildJson.getString("finishTime"));
-        build.setCreatedBy(tfsBuildJson.getJSONObject("requestedFor").getString("displayName"));
-        build.setCreatedOn(tfsBuildJson.getString("queueTime"));
-        build.setStartTime(tfsBuildJson.getString("startTime"));
-        build.setResult(tfsBuildJson.getString("result"));
+        build.setFinishTime(parser.getString(tfsBuildJson, "finishTime"));
+        build.setCreatedBy(parser.getString(tfsBuildJson.getJSONObject("requestedFor"), "displayName"));
+        build.setCreatedOn(parser.getString(tfsBuildJson, "queueTime"));
+        build.setStartTime(parser.getString(tfsBuildJson, "startTime"));
+        build.setResult(parser.getString(tfsBuildJson, "result"));
         return build;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getBuildNumber() {
         return buildNumber;
@@ -76,7 +90,7 @@ public class ListedBuild implements ListedEntity {
         this.buildDefinition = buildDefinition;
     }
 
-    public void setFinishTime(String finishTime) {
+    private void setFinishTime(String finishTime) {
         this.finishTime = finishTime;
     }
 
@@ -84,7 +98,7 @@ public class ListedBuild implements ListedEntity {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    private void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
 
@@ -92,7 +106,7 @@ public class ListedBuild implements ListedEntity {
         return createdOn;
     }
 
-    public void setCreatedOn(String createdOn) {
+    private void setCreatedOn(String createdOn) {
         this.createdOn = createdOn;
     }
 
@@ -100,7 +114,7 @@ public class ListedBuild implements ListedEntity {
         return startTime;
     }
 
-    public void setStartTime(String startTime) {
+    private void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
@@ -108,7 +122,7 @@ public class ListedBuild implements ListedEntity {
         return result;
     }
 
-    public void setResult(String result) {
+    private void setResult(String result) {
         this.result = result;
     }
 }

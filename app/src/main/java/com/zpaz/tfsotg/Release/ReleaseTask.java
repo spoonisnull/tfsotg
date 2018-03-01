@@ -1,25 +1,25 @@
 package com.zpaz.tfsotg.Release;
 
+import com.zpaz.tfsotg.Utils.JsonParser;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.lang.reflect.Array;
 
 /**
  * Created by zsolt on 25/02/18.
  */
 
 public class ReleaseTask {
-    String id;
-    String name;
-    String rank;
-    String startTime;
-    String finishTime;
-    String status;
-    String[] issues;
-    String agentName;
-    String logUrl;
+    private String id;
+    private String name;
+    private String rank;
+    private String startTime;
+    private String finishTime;
+    private String status;
+    private String[] issues;
+    private String agentName;
+    private String logUrl;
 
     public String getId() {
         return id;
@@ -41,7 +41,7 @@ public class ReleaseTask {
         return rank;
     }
 
-    public void setRank(String rank) {
+    private void setRank(String rank) {
         this.rank = rank;
     }
 
@@ -49,7 +49,7 @@ public class ReleaseTask {
         return startTime;
     }
 
-    public void setStartTime(String startTime) {
+    private void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
@@ -57,7 +57,7 @@ public class ReleaseTask {
         return finishTime;
     }
 
-    public void setFinishTime(String finishTime) {
+    private void setFinishTime(String finishTime) {
         this.finishTime = finishTime;
     }
 
@@ -65,7 +65,7 @@ public class ReleaseTask {
         return status;
     }
 
-    public void setStatus(String status) {
+    private void setStatus(String status) {
         this.status = status;
     }
 
@@ -73,7 +73,7 @@ public class ReleaseTask {
         return issues;
     }
 
-    public void setIssues(String[] issues) {
+    private void setIssues(String[] issues) {
         this.issues = issues;
     }
 
@@ -81,7 +81,7 @@ public class ReleaseTask {
         return agentName;
     }
 
-    public void setAgentName(String agentName) {
+    private void setAgentName(String agentName) {
         this.agentName = agentName;
     }
 
@@ -89,26 +89,27 @@ public class ReleaseTask {
         return logUrl;
     }
 
-    public void setLogUrl(String logUrl) {
+    private void setLogUrl(String logUrl) {
         this.logUrl = logUrl;
     }
 
-    public static ReleaseTask GetReleaseTaskFromJson(JSONObject releaseTaskJson) throws JSONException {
+    static ReleaseTask GetReleaseTaskFromJson(JSONObject releaseTaskJson) throws JSONException {
+        JsonParser parser = new JsonParser();
         ReleaseTask releaseTask = new ReleaseTask();
-        releaseTask.setId(releaseTaskJson.getString("id"));
-        releaseTask.setName(releaseTaskJson.getString("name"));
-        releaseTask.setRank(releaseTaskJson.getString("rank"));
-        releaseTask.setStartTime(releaseTaskJson.getString("startTime"));
-        releaseTask.setFinishTime(releaseTaskJson.getString("finishTime"));
-        releaseTask.setStatus(releaseTaskJson.getString("status"));
+        releaseTask.setId(parser.getString(releaseTaskJson,"id"));
+        releaseTask.setName(parser.getString(releaseTaskJson,"name"));
+        releaseTask.setRank(parser.getString(releaseTaskJson,"rank"));
+        releaseTask.setStartTime(parser.getString(releaseTaskJson,"startTime"));
+        releaseTask.setFinishTime(parser.getString(releaseTaskJson,"finishTime"));
+        releaseTask.setStatus(parser.getString(releaseTaskJson,"status"));
         JSONArray issuesArray = releaseTaskJson.getJSONArray("issues");
         String[] issues = new String[issuesArray.length()];
         for(int i = 0; i < issuesArray.length(); i ++){
             issues[i] = issuesArray.getJSONObject(i).toString();
         }
         releaseTask.setIssues(issues);
-        releaseTask.setAgentName(releaseTaskJson.getString("agentName"));
-        releaseTask.setLogUrl(releaseTaskJson.getString("logUrl"));
+        releaseTask.setAgentName(parser.getString(releaseTaskJson,"agentName"));
+        releaseTask.setLogUrl(parser.getString(releaseTaskJson,"logUrl"));
         return releaseTask;
     }
 }

@@ -1,5 +1,8 @@
 package com.zpaz.tfsotg.Release;
 
+import com.zpaz.tfsotg.Enums.EnvironmentStatus;
+import com.zpaz.tfsotg.Utils.JsonParser;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,11 +12,11 @@ import org.json.JSONObject;
  */
 
 public class ReleaseEnvironment {
-    String id;
-    String releaseId;
-    String name;
-    String status;
-    ReleaseStep[] steps;
+    private String id;
+    private String releaseId;
+    private String name;
+    private EnvironmentStatus status;
+    private ReleaseStep[] steps;
 
     public String getId() {
         return id;
@@ -27,7 +30,7 @@ public class ReleaseEnvironment {
         return releaseId;
     }
 
-    public void setReleaseId(String releaseId) {
+    private void setReleaseId(String releaseId) {
         this.releaseId = releaseId;
     }
 
@@ -39,11 +42,11 @@ public class ReleaseEnvironment {
         this.name = name;
     }
 
-    public String getStatus() {
+    EnvironmentStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    private void setStatus(EnvironmentStatus status) {
         this.status = status;
     }
 
@@ -51,16 +54,17 @@ public class ReleaseEnvironment {
         return steps;
     }
 
-    public void setSteps(ReleaseStep[] steps) {
+    private void setSteps(ReleaseStep[] steps) {
         this.steps = steps;
     }
 
-    public static ReleaseEnvironment GetReleaseEnvironmentFromJson(JSONObject environmentJson) throws JSONException {
+    static ReleaseEnvironment GetReleaseEnvironmentFromJson(JSONObject environmentJson) throws JSONException {
+        JsonParser parser = new JsonParser();
         ReleaseEnvironment environment = new ReleaseEnvironment();
-        environment.setId(environmentJson.getString("id"));
-        environment.setReleaseId(environmentJson.getString("releaseId"));
-        environment.setName(environmentJson.getString("name"));
-        environment.setStatus(environmentJson.getString("status"));
+        environment.setId(parser.getString(environmentJson,"id"));
+        environment.setReleaseId(parser.getString(environmentJson,"releaseId"));
+        environment.setName(parser.getString(environmentJson,"name"));
+        environment.setStatus(EnvironmentStatus.valueOf(environmentJson.getString("status")));
         JSONArray releaseStepsJson = environmentJson.getJSONArray("deploySteps");
         ReleaseStep[] steps = new ReleaseStep[releaseStepsJson.length()];
         for(int i = 0; i < releaseStepsJson.length(); i ++){

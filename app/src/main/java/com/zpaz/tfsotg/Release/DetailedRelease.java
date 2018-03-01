@@ -1,6 +1,7 @@
 package com.zpaz.tfsotg.Release;
 
 import com.zpaz.tfsotg.Interfaces.DetailedEntity;
+import com.zpaz.tfsotg.Utils.JsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,12 +12,12 @@ import org.json.JSONObject;
  */
 
 public class DetailedRelease implements DetailedEntity{
-    String id;
-    String name;
-    String createdOn;
-    String createdBy;
-    ReleaseEnvironment[] environments;
-    String releaseDefinition;
+    private String id;
+    private String name;
+    private String createdOn;
+    private String createdBy;
+    private ReleaseEnvironment[] environments;
+    private String releaseDefinition;
 
     public String getId() {
         return id;
@@ -34,47 +35,48 @@ public class DetailedRelease implements DetailedEntity{
         this.name = name;
     }
 
-    public String getCreatedOn() {
+    String getCreatedOn() {
         return createdOn;
     }
 
-    public void setCreatedOn(String createdOn) {
+    private void setCreatedOn(String createdOn) {
         this.createdOn = createdOn;
     }
 
-    public String getCreatedBy() {
+    String getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    private void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
 
-    public ReleaseEnvironment[] getEnvironments() {
+    ReleaseEnvironment[] getEnvironments() {
         return environments;
     }
 
-    public void setEnvironments(ReleaseEnvironment[] environments) {
+    private void setEnvironments(ReleaseEnvironment[] environments) {
         this.environments = environments;
     }
 
-    public String getReleaseDefinition() {
+    String getReleaseDefinition() {
         return releaseDefinition;
     }
 
-    public void setReleaseDefinition(String releaseDefinition) {
+    private void setReleaseDefinition(String releaseDefinition) {
         this.releaseDefinition = releaseDefinition;
     }
 
-    public static DetailedRelease GetDetailedReleaseFromJson(String response) throws JSONException {
+    static DetailedRelease GetDetailedReleaseFromJson(String response) throws JSONException {
+        JsonParser parser = new JsonParser();
         JSONObject releaseJson = new JSONObject(response);
         DetailedRelease detailedRelease = new DetailedRelease();
 
-        detailedRelease.setId(releaseJson.getString("id"));
-        detailedRelease.setName(releaseJson.getString("name"));
-        detailedRelease.setCreatedOn(releaseJson.getString("createdOn"));
-        detailedRelease.setCreatedBy(releaseJson.getJSONObject("createdBy").getString("displayName"));
-        detailedRelease.setReleaseDefinition(releaseJson.getJSONObject("releaseDefinition").getString("name"));
+        detailedRelease.setId(parser.getString(releaseJson, "id"));
+        detailedRelease.setName(parser.getString(releaseJson,"name"));
+        detailedRelease.setCreatedOn(parser.getString(releaseJson,"createdOn"));
+        detailedRelease.setCreatedBy(parser.getString(releaseJson.getJSONObject("createdBy"),"displayName"));
+        detailedRelease.setReleaseDefinition(parser.getString(releaseJson.getJSONObject("releaseDefinition"),"name"));
         JSONArray environmentsJson = releaseJson.getJSONArray("environments");
         ReleaseEnvironment[] environments = new ReleaseEnvironment[environmentsJson.length()];
         for(int i = 0; i < environmentsJson.length(); i ++){

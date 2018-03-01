@@ -15,7 +15,7 @@
 
         <TextView
             android:id="@+id/relDefLabel"
-            android:layout_width="match_parent"
+            android:layout_width="606dp"
             android:layout_height="wrap_content"
             android:text="Release definition" />
 
@@ -47,7 +47,9 @@
             android:id="@+id/environmentsLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"></LinearLayout>
+            android:orientation="vertical">
+
+        </LinearLayout>
 
     </LinearLayout>
 </android.support.v4.widget.NestedScrollView>

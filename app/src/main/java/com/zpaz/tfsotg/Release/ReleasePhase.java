@@ -1,5 +1,7 @@
 package com.zpaz.tfsotg.Release;
 
+import com.zpaz.tfsotg.Utils.JsonParser;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,11 +11,11 @@ import org.json.JSONObject;
  */
 
 public class ReleasePhase {
-    String id;
-    String rank;
-    String phaseType;
-    String status;
-    ReleaseTask[] releaseTasks;
+    private String id;
+    private String rank;
+    private String phaseType;
+    private String status;
+    private ReleaseTask[] releaseTasks;
 
     public String getId() {
         return id;
@@ -27,7 +29,7 @@ public class ReleasePhase {
         return rank;
     }
 
-    public void setRank(String rank) {
+    private void setRank(String rank) {
         this.rank = rank;
     }
 
@@ -35,7 +37,7 @@ public class ReleasePhase {
         return phaseType;
     }
 
-    public void setPhaseType(String phaseType) {
+    private void setPhaseType(String phaseType) {
         this.phaseType = phaseType;
     }
 
@@ -43,7 +45,7 @@ public class ReleasePhase {
         return status;
     }
 
-    public void setStatus(String status) {
+    private void setStatus(String status) {
         this.status = status;
     }
 
@@ -51,16 +53,17 @@ public class ReleasePhase {
         return releaseTasks;
     }
 
-    public void setReleaseTasks(ReleaseTask[] releaseTasks) {
+    private void setReleaseTasks(ReleaseTask[] releaseTasks) {
         this.releaseTasks = releaseTasks;
     }
 
-    public static ReleasePhase GetReleasePhaseFromJson(JSONObject releasePhaseJson) throws JSONException {
+    static ReleasePhase GetReleasePhaseFromJson(JSONObject releasePhaseJson) throws JSONException {
+        JsonParser parser = new JsonParser();
         ReleasePhase phase = new ReleasePhase();
-        phase.setId(releasePhaseJson.getString("id"));
-        phase.setRank(releasePhaseJson.getString("rank"));
-        phase.setPhaseType(releasePhaseJson.getString("phaseType"));
-        phase.setStatus(releasePhaseJson.getString("status"));
+        phase.setId(parser.getString(releasePhaseJson,"id"));
+        phase.setRank(parser.getString(releasePhaseJson,"rank"));
+        phase.setPhaseType(parser.getString(releasePhaseJson,"phaseType"));
+        phase.setStatus(parser.getString(releasePhaseJson,"status"));
         JSONArray releaseTasksJson = releasePhaseJson.getJSONArray("deploymentJobs").getJSONObject(0).getJSONArray("tasks");
         ReleaseTask[] tasks = new ReleaseTask[releaseTasksJson.length()];
         for(int i = 0; i < releaseTasksJson.length(); i ++){

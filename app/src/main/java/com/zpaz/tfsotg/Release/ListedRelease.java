@@ -72,7 +72,7 @@ public class ListedRelease implements ListedEntity {
         return status;
     }
 
-    public void setStatus(String status) {
+    private void setStatus(String status) {
         this.status = status;
     }
 
@@ -80,7 +80,7 @@ public class ListedRelease implements ListedEntity {
         return createdOn;
     }
 
-    public void setCreatedOn(String createdOn) {
+    private void setCreatedOn(String createdOn) {
         this.createdOn = createdOn;
     }
 
@@ -88,7 +88,7 @@ public class ListedRelease implements ListedEntity {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    private void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
 
@@ -96,7 +96,7 @@ public class ListedRelease implements ListedEntity {
         return releaseDefinition;
     }
 
-    public void setReleaseDefinition(String releaseDefinition) {
+    private void setReleaseDefinition(String releaseDefinition) {
         this.releaseDefinition = releaseDefinition;
     }
 

@@ -1,4 +1,4 @@
-package com.zpaz.tfsotg.Utils;
+package com.zpaz.tfsotg.Enums;
 
 /**
  * Created by zsolt on 24/02/18.

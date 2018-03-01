@@ -2,26 +2,18 @@ package com.zpaz.tfsotg.Release;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.zpaz.tfsotg.Enums.EnvironmentStatus;
 import com.zpaz.tfsotg.R;
 import com.zpaz.tfsotg.Utils.DateTimeParser;
-import com.zpaz.tfsotg.Utils.EnvironmentStatuses;
 
 import org.json.JSONException;
-import org.json.JSONStringer;
-
-import java.util.ArrayList;
 
 import static com.zpaz.tfsotg.Release.DetailedRelease.GetDetailedReleaseFromJson;
 
@@ -51,13 +43,13 @@ public class ViewReleaseDetails extends AppCompatActivity {
         }
         setTextsInViews();
         layout = findViewById(R.id.environmentsLayout);
-        LinearLayoutManager llm = new LinearLayoutManager(context);
         createCardsForEnvironments();
     }
 
     private void createCardsForEnvironments() {
         for(int i = 0; i < release.getEnvironments().length; i ++){
             CardView card = new CardView(context);
+
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.MATCH_PARENT
@@ -72,7 +64,9 @@ public class ViewReleaseDetails extends AppCompatActivity {
 
             TextView name = new TextView(context);
             name.setLayoutParams(params);
-            name.setText(release.getEnvironments()[i].getName()+"\n\n\n\n");
+            if(release.getEnvironments()[i].getName() != null){
+                name.setText(release.getEnvironments()[i].getName()+"\n\n\n\n");
+            }
             card.addView(name);
             layout.addView(card);
         }
@@ -87,13 +81,14 @@ public class ViewReleaseDetails extends AppCompatActivity {
         releaseCreatedDisplay.setText(String.format("%s @ %s\nby %s", createdOn, createdAt, release.getCreatedBy()));
     }
 
-    private void setCardBackgroundBasedOnStatus(CardView card, String status){
-        switch (EnvironmentStatuses.valueOf(status)){
+    private void setCardBackgroundBasedOnStatus(CardView card, EnvironmentStatus status){
+        switch (status){
             case failed:
             case rejected:
-            case cancelled:
+            case canceled:
                 card.setBackgroundColor(getResources().getColor(R.color.tfsRed));
                 break;
+            case inProgress:
             case notStarted:
                 card.setBackgroundColor(getResources().getColor(R.color.tfsGray));
                 break;

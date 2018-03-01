@@ -1,5 +1,7 @@
 package com.zpaz.tfsotg.Release;
 
+import com.zpaz.tfsotg.Utils.JsonParser;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,13 +11,13 @@ import org.json.JSONObject;
  */
 
 public class ReleaseStep {
-    String id;
-    String status;
-    String attempt;
-    String requestedBy;
-    String queuedOn;
-    boolean hasStarted;
-    ReleasePhase[] phases;
+    private String id;
+    private String status;
+    private String attempt;
+    private String requestedBy;
+    private String queuedOn;
+    private boolean hasStarted;
+    private ReleasePhase[] phases;
 
     public String getId() {
         return id;
@@ -29,7 +31,7 @@ public class ReleaseStep {
         return status;
     }
 
-    public void setStatus(String status) {
+    private void setStatus(String status) {
         this.status = status;
     }
 
@@ -37,7 +39,7 @@ public class ReleaseStep {
         return attempt;
     }
 
-    public void setAttempt(String attempt) {
+    private void setAttempt(String attempt) {
         this.attempt = attempt;
     }
 
@@ -45,7 +47,7 @@ public class ReleaseStep {
         return requestedBy;
     }
 
-    public void setRequestedBy(String requestedBy) {
+    private void setRequestedBy(String requestedBy) {
         this.requestedBy = requestedBy;
     }
 
@@ -53,7 +55,7 @@ public class ReleaseStep {
         return queuedOn;
     }
 
-    public void setQueuedOn(String queuedOn) {
+    private void setQueuedOn(String queuedOn) {
         this.queuedOn = queuedOn;
     }
 
@@ -61,7 +63,7 @@ public class ReleaseStep {
         return hasStarted;
     }
 
-    public void setHasStarted(boolean hasStarted) {
+    private void setHasStarted(boolean hasStarted) {
         this.hasStarted = hasStarted;
     }
 
@@ -69,17 +71,18 @@ public class ReleaseStep {
         return phases;
     }
 
-    public void setPhases(ReleasePhase[] phases) {
+    private void setPhases(ReleasePhase[] phases) {
         this.phases = phases;
     }
 
-    public static ReleaseStep GetReleaseStepFromJson(JSONObject releaseStepJson) throws JSONException {
+    static ReleaseStep GetReleaseStepFromJson(JSONObject releaseStepJson) throws JSONException {
+        JsonParser parser = new JsonParser();
         ReleaseStep step = new ReleaseStep();
-        step.setId(releaseStepJson.getString("id"));
-        step.setStatus(releaseStepJson.getString("status"));
-        step.setAttempt(releaseStepJson.getString("attempt"));
-        step.setRequestedBy(releaseStepJson.getJSONObject("requestedBy").getString("displayName"));
-        step.setQueuedOn(releaseStepJson.getString("queuedOn"));
+        step.setId(parser.getString(releaseStepJson,"id"));
+        step.setStatus(parser.getString(releaseStepJson,"status"));
+        step.setAttempt(parser.getString(releaseStepJson,"attempt"));
+        step.setRequestedBy(parser.getString(releaseStepJson.getJSONObject("requestedBy"),"displayName"));
+        step.setQueuedOn(parser.getString(releaseStepJson,"queuedOn"));
         step.setHasStarted(releaseStepJson.getBoolean("hasStarted"));
         JSONArray phasesJson = releaseStepJson.getJSONArray("releaseDeployPhases");
         ReleasePhase[] phases = new ReleasePhase[phasesJson.length()];
