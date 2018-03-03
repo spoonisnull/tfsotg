@@ -15,16 +15,19 @@
 
         <TextView
             android:id="@+id/relDefLabel"
-            android:layout_width="606dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="8dp"
             android:text="Release definition" />
 
         <TextView
             android:id="@+id/relDefDisplay"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:text="release definition"
             android:textAlignment="viewStart"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:textAppearance="@android:style/TextAppearance.Material.Medium"
             android:textStyle="bold" />
 
@@ -32,6 +35,7 @@
             android:id="@+id/relCreatedLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="8dp"
             android:text="Created" />
 
         <TextView
@@ -39,6 +43,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="TextView"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="8dp"
             android:textAppearance="@android:style/TextAppearance.Material.Medium"
             android:textStyle="bold"
             tools:text="created by, at" />
@@ -46,7 +53,7 @@
         <LinearLayout
             android:id="@+id/environmentsLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="fill_parent"
             android:orientation="vertical">
 
         </LinearLayout>

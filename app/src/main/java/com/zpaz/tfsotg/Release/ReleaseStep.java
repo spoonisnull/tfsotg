@@ -1,10 +1,13 @@
 package com.zpaz.tfsotg.Release;
 
+import com.zpaz.tfsotg.Utils.DateTimeParser;
 import com.zpaz.tfsotg.Utils.JsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Arrays;
 
 /**
  * Created by zsolt on 25/02/18.
@@ -18,6 +21,27 @@ public class ReleaseStep {
     private String queuedOn;
     private boolean hasStarted;
     private ReleasePhase[] phases;
+
+    @Override
+    public String toString() {
+        DateTimeParser dateTime = new DateTimeParser(getQueuedOn());
+        StringBuilder sb = new StringBuilder();
+        String progress = hasStarted ? "in progress" : "not started yet";
+        sb.append("ID: ")
+                .append(getId())
+                .append(" [")
+                .append(getStatus())
+                .append("] \n")
+                .append(getRequestedBy())
+                .append("\n")
+                .append(dateTime.getDate())
+                .append("@")
+                .append(dateTime.getTimeWithSeconds())
+                .append("\n")
+                .append(progress);
+        sb.append(Arrays.toString(phases));
+        return sb.toString();
+    }
 
     public String getId() {
         return id;

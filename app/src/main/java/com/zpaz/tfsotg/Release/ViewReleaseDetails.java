@@ -1,10 +1,12 @@
 package com.zpaz.tfsotg.Release;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,8 +25,8 @@ public class ViewReleaseDetails extends AppCompatActivity {
     TextView releaseDefinitionDisplay;
     TextView releaseCreatedDisplay;
     LinearLayout layout;
-    int gap = 15;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,62 +43,52 @@ public class ViewReleaseDetails extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        setTextsInViews();
+        setTopTextViews();
         layout = findViewById(R.id.environmentsLayout);
-        createCardsForEnvironments();
+        setUpEnvironmentViews();
     }
 
-    private void createCardsForEnvironments() {
-        for(int i = 0; i < release.getEnvironments().length; i ++){
-            CardView card = new CardView(context);
+    private void setTopTextViews() {
+        setTitle(release.getName());
+        releaseDefinitionDisplay.setText(release.getReleaseDefinition());
+        DateTimeParser dateTime = new DateTimeParser(release.getCreatedOn());
+        releaseCreatedDisplay.setText(String.format(dateTime.getTimeWithSeconds() + " - " + dateTime.getDateWithYear() + "\n" + release.getCreatedBy()));
+    }
 
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT
-            );
-            card.setLayoutParams(params);
-            card.setRadius(9);
-            card.setContentPadding(gap, gap, gap, gap);
-            card.setPadding(0,0,gap, gap);
-            setCardBackgroundBasedOnStatus(card, release.getEnvironments()[i].getStatus());
-            card.setMaxCardElevation(gap);
-            card.setElevation(9);
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void setUpEnvironmentViews(){
+        ReleaseEnvironment[] environments = release.getEnvironments();
+        for (ReleaseEnvironment environment : environments) {
+            TextView envTitleView = new TextView(context);
+            envTitleView.setText(environment.getName());
+            envTitleView.setTypeface(null, Typeface.BOLD);
+            setTitleBarBgColourBasedOnStatus(envTitleView, environment.getStatus());
+            envTitleView.setTextColor(Color.WHITE);
+            layout.addView(envTitleView);
 
-            TextView name = new TextView(context);
-            name.setLayoutParams(params);
-            if(release.getEnvironments()[i].getName() != null){
-                name.setText(release.getEnvironments()[i].getName()+"\n\n\n\n");
-            }
-            card.addView(name);
-            layout.addView(card);
+
+            TextView blob = new TextView(context);
+            blob.setText(environment.toString() + "\n\n");
+            layout.addView(blob);
         }
     }
 
-    private void setTextsInViews() {
-        setTitle(release.getName());
-        releaseDefinitionDisplay.setText(release.getReleaseDefinition());
-        DateTimeParser parser = new DateTimeParser();
-        String createdOn = parser.parseDateFromDateTimeString(release.getCreatedOn());
-        String createdAt = parser.parseTimeFromDateTimeString(release.getCreatedOn());
-        releaseCreatedDisplay.setText(String.format("%s @ %s\nby %s", createdOn, createdAt, release.getCreatedBy()));
-    }
-
-    private void setCardBackgroundBasedOnStatus(CardView card, EnvironmentStatus status){
+    private void setTitleBarBgColourBasedOnStatus(TextView textView, EnvironmentStatus status){
         switch (status){
             case failed:
             case rejected:
             case canceled:
-                card.setBackgroundColor(getResources().getColor(R.color.tfsRed));
+                textView.setBackgroundColor(getResources().getColor(R.color.tfsRed));
                 break;
             case inProgress:
             case notStarted:
-                card.setBackgroundColor(getResources().getColor(R.color.tfsGray));
+                textView.setBackgroundColor(getResources().getColor(R.color.tfsGray));
                 break;
             case partiallySucceeded:
-                card.setBackgroundColor(getResources().getColor(R.color.tfsOrange));
+                textView.setBackgroundColor(getResources().getColor(R.color.tfsOrange));
                 break;
             case succeeded:
-                card.setBackgroundColor(getResources().getColor(R.color.tfsGreen));
+                textView.setBackgroundColor(getResources().getColor(R.color.tfsGreen));
                 break;
         }
     }

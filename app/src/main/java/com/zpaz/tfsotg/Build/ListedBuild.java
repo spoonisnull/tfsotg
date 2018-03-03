@@ -17,7 +17,9 @@ import java.util.LinkedList;
 public class ListedBuild implements ListedEntity {
 
     private static JsonParser parser;
-    private DateTimeParser dateTimeParser;
+    private DateTimeParser queuedDateTime;
+    private DateTimeParser startedDateTime;
+    private DateTimeParser finishedDateTime;
     private int id;
     private String buildNumber;
     private String buildDefinition;
@@ -27,21 +29,28 @@ public class ListedBuild implements ListedEntity {
     private String startTime;
     private String result;
 
-    private ListedBuild(int id, String buildNumber, String buildDefinition) {
+    private ListedBuild(int id, String buildNumber, String buildDefinition, String createdBy, String createdOn, String finishTime, String startTime, String result) {
         this.buildNumber = buildNumber;
         this.buildDefinition = buildDefinition;
         this.id = id;
-        parser = new JsonParser();
-        dateTimeParser = new DateTimeParser();
+        this.createdBy = createdBy;
+        this.createdOn = createdOn;
+        this.finishTime = finishTime;
+        this.startTime = startTime;
+        this.result = result;
+
+        queuedDateTime = new DateTimeParser(getCreatedOn());
+        startedDateTime = new DateTimeParser(getStartTime());
+        finishedDateTime = new DateTimeParser(getFinishTime());
     }
 
     @Override
     public String toString() {
         return buildDefinition + " [" + result + "]" + "\n"
                 + buildNumber + " (" + createdBy + ")" + "\n"
-                + "Queued: " + dateTimeParser.parseDateFromDateTimeString(createdOn) + "@" + dateTimeParser.parseTimeFromDateTimeString(createdOn) + "\n"
-                + "Started: " + dateTimeParser.parseDateFromDateTimeString(startTime) + "@" + dateTimeParser.parseTimeFromDateTimeString(startTime) + "\n"
-                + "Finished: " + dateTimeParser.parseDateFromDateTimeString(finishTime) + "@" + dateTimeParser.parseTimeFromDateTimeString(finishTime);
+                + "Queued: " + queuedDateTime.getDate() + "@" + queuedDateTime.getTime() + "\n"
+                + "Started: " + startedDateTime.getDate() + "@" + startedDateTime.getTime() + "\n"
+                + "Finished: " + finishedDateTime.getDate() + "@" + finishedDateTime.getTime();
     }
 
     public static LinkedList GetTfsBuilds(String response) throws JSONException {
@@ -54,15 +63,16 @@ public class ListedBuild implements ListedEntity {
     }
 
     private static ListedBuild parseBuildFromResponse(JSONObject tfsBuildJson) throws JSONException {
+        parser = new JsonParser();
         ListedBuild build = new ListedBuild(
                 tfsBuildJson.getInt("id"),
                 tfsBuildJson.getString("buildNumber"),
-                tfsBuildJson.getJSONObject("definition").getString("name"));
-        build.setFinishTime(parser.getString(tfsBuildJson, "finishTime"));
-        build.setCreatedBy(parser.getString(tfsBuildJson.getJSONObject("requestedFor"), "displayName"));
-        build.setCreatedOn(parser.getString(tfsBuildJson, "queueTime"));
-        build.setStartTime(parser.getString(tfsBuildJson, "startTime"));
-        build.setResult(parser.getString(tfsBuildJson, "result"));
+                tfsBuildJson.getJSONObject("definition").getString("name"),
+                parser.getString(tfsBuildJson.getJSONObject("requestedFor"), "displayName"),
+                parser.getString(tfsBuildJson, "queueTime"),
+                parser.getString(tfsBuildJson, "finishTime"),
+                parser.getString(tfsBuildJson, "startTime"),
+                parser.getString(tfsBuildJson, "result"));
         return build;
     }
 
@@ -84,6 +94,10 @@ public class ListedBuild implements ListedEntity {
 
     public String getBuildDefinition() {
         return buildDefinition;
+    }
+
+    public String getFinishTime() {
+        return finishTime;
     }
 
     public void setBuildDefinition(String buildDefinition) {

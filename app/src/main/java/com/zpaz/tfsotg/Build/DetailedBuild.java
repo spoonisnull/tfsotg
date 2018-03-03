@@ -24,7 +24,6 @@ public class DetailedBuild implements DetailedEntity{
 
     private BuildTask[] GetBuildTasksFromJson(String build) throws JSONException {
         JsonParser parser = new JsonParser();
-        DateTimeParser dateTimeParser = new DateTimeParser();
         JSONObject buildJson = new JSONObject(build);
         JSONArray buildTasksArray = buildJson.getJSONArray("records");
         tasks = new BuildTask[buildTasksArray.length()];

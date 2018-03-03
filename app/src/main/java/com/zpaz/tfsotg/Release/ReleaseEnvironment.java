@@ -58,6 +58,16 @@ public class ReleaseEnvironment {
         this.steps = steps;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ID: ").append(getId()).append(" [").append(getReleaseId()).append("] \n");
+        for(ReleaseStep step : getSteps()){
+            sb.append(step.toString());
+        }
+        return sb.toString();
+    }
+
     static ReleaseEnvironment GetReleaseEnvironmentFromJson(JSONObject environmentJson) throws JSONException {
         JsonParser parser = new JsonParser();
         ReleaseEnvironment environment = new ReleaseEnvironment();
