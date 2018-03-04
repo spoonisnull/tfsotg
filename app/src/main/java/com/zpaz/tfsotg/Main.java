@@ -10,9 +10,11 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +30,7 @@ import com.zpaz.tfsotg.Interfaces.ListedEntity;
 import com.zpaz.tfsotg.Release.ListedRelease;
 import com.zpaz.tfsotg.Release.ViewReleaseDetails;
 import com.zpaz.tfsotg.Enums.QueryActions;
+import com.zpaz.tfsotg.Utils.MainListAdapter;
 
 import org.json.JSONException;
 
@@ -52,6 +55,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     ListAdapter listAdapter;
     LinkedList queueList;
     Context context;
+    SwipeRefreshLayout swipeRefresh;
+    QueryActions lastQuery;
     int itemsToShow = 10;
 
     @Override
@@ -82,7 +87,35 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         queueList = new LinkedList<ListedEntity>();
         mainList = findViewById(R.id.mainList);
 
-        new requestFromTfs().execute(GetBuilds, credentials);
+        queryBuilds();
+        swipeRefresh = findViewById(R.id.swiperefresh);
+        setUpSwipeRefresh();
+
+    }
+
+    private void setUpSwipeRefresh(){
+        swipeRefresh.setOnRefreshListener(
+            new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    if(lastQuery.equals(QueryActions.GetBuilds)){
+                        queryBuilds();
+                    }else if (lastQuery.equals(QueryActions.GetReleases)){
+                        queryReleases();
+                    }
+                }
+            }
+        );
+    }
+
+    private void queryBuilds(){
+        lastQuery = GetBuilds;
+        new RequestFromTfs().execute(GetBuilds, credentials);
+    }
+
+    private void queryReleases(){
+        lastQuery = GetReleases;
+        new RequestFromTfs().execute(GetReleases, credentials);
     }
 
     @Override
@@ -97,7 +130,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -124,9 +156,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         int id = item.getItemId();
 
         if (id == R.id.menuBuilds) {
-            new requestFromTfs().execute(GetBuilds, credentials);
+            queryBuilds();
         } else if (id == R.id.menuReleases) {
-            new requestFromTfs().execute(GetReleases, credentials);
+            queryReleases();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -137,7 +169,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private String buildUrl(QueryActions action, String param) {
         switch (action) {
             case GetBuilds:
-                return baseUrl + "_apis/build/builds?$top=" + itemsToShowStringified() + "&api-version=2.0";
+                return baseUrl + "_apis/build/builds?$top=" + itemsToShow + "&api-version=2.0";
             case GetReleases:
                 return baseUrl + "_apis/Release/releases";
             case GetReleaseDetails:
@@ -149,10 +181,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }
 
-    private String itemsToShowStringified(){
-        return "" + itemsToShow;
-    }
-    private class requestFromTfs extends AsyncTask<Object, String, String> {
+    private class RequestFromTfs extends AsyncTask<Object, String, String> {
         QueryActions action;
 
         @RequiresApi(api = Build.VERSION_CODES.N)
@@ -168,22 +197,22 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 optionalUrlParam = "/" + params[2].toString();
             }
 
-            HttpURLConnection httpURLConnection = null;
+            HttpURLConnection conn = null;
             try {
                 String credsEncoded = params[1].toString();
                 URL url = new URL(buildUrl(action, optionalUrlParam));
-                httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setRequestMethod("GET");
-                httpURLConnection.setRequestProperty("Authorization", "Basic " + credsEncoded);
-                httpURLConnection.setDefaultUseCaches(true);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Authorization", "Basic " + credsEncoded);
+                conn.setDefaultUseCaches(true);
 
-                response = httpURLConnection.getResponseMessage();
+                response = conn.getResponseMessage();
 
                 BufferedReader reader;
                 if (response.equals("OK")) {
-                    reader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                    reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 } else {
-                    reader = new BufferedReader(new InputStreamReader(httpURLConnection.getErrorStream()));
+                    reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
                 }
 
                 returnedObject = reader.lines().collect(Collectors.joining());
@@ -191,8 +220,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                if (httpURLConnection != null) {
-                    httpURLConnection.disconnect();
+                if (conn != null) {
+                    conn.disconnect();
                 }
             }
             return returnedObject;
@@ -200,6 +229,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         @Override
         protected void onPostExecute(String response) {
+            if(swipeRefresh.isRefreshing()){
+                swipeRefresh.setRefreshing(false);
+            }
             try {
                 switch (action){
                     case GetBuilds:
@@ -230,7 +262,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
+//                    listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
+                    listAdapter = new MainListAdapter(context, R.layout.main_list_layout, list);
                     addRelevantListenerToListView();
                     changeTitle();
                     mainList.setAdapter(listAdapter);
@@ -265,7 +298,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     ListedRelease selectedRelease = (ListedRelease) queueList.get(position);
-                    new requestFromTfs().execute(GetReleaseDetails, credentials, selectedRelease.getId());
+                    new RequestFromTfs().execute(GetReleaseDetails, credentials, selectedRelease.getId());
                 }
             });
         }
@@ -275,7 +308,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     ListedBuild selectedBuild = (ListedBuild) queueList.get(position);
-                    new requestFromTfs().execute(GetBuildDetails, credentials, String.valueOf(selectedBuild.getId()));
+                    new RequestFromTfs().execute(GetBuildDetails, credentials, String.valueOf(selectedBuild.getId()));
                 }
             });
         }

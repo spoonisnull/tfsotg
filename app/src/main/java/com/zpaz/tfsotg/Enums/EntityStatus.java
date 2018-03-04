@@ -4,7 +4,7 @@ package com.zpaz.tfsotg.Enums;
  * Created by zsolt on 26/02/18.
  */
 
-public enum EnvironmentStatus {
+public enum EntityStatus {
     succeeded,
     partiallySucceeded,
     notStarted,
@@ -12,4 +12,6 @@ public enum EnvironmentStatus {
     canceled,
     rejected,
     inProgress,
+    active,
+    abandoned,
 }

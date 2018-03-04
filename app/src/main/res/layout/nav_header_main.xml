@@ -25,6 +25,8 @@
         android:id="@+id/mainUserLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="username" />
+        android:fontFamily="sans-serif-condensed"
+        android:text="username"
+        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
 
 </LinearLayout>

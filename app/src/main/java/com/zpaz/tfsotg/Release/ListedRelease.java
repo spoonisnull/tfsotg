@@ -1,5 +1,6 @@
 package com.zpaz.tfsotg.Release;
 
+import com.zpaz.tfsotg.Enums.EntityStatus;
 import com.zpaz.tfsotg.Interfaces.ListedEntity;
 
 import org.json.JSONArray;
@@ -16,7 +17,7 @@ public class ListedRelease implements ListedEntity {
 
     private String id;
     private String name;
-    private String status;
+    private EntityStatus status;
     private String createdOn;
     private String createdBy;
     private String releaseDefinition;
@@ -49,7 +50,7 @@ public class ListedRelease implements ListedEntity {
         release.setCreatedBy(tfsReleaseJson.getJSONObject("createdBy").getString("displayName"));
         release.setCreatedOn(tfsReleaseJson.getString("createdOn"));
         release.setReleaseDefinition(tfsReleaseJson.getJSONObject("releaseDefinition").getString("name"));
-        release.setStatus(tfsReleaseJson.getString("status"));
+        release.setStatus(EntityStatus.valueOf(tfsReleaseJson.getString("status")));
         return release;
     }
     public String getId() {
@@ -68,11 +69,16 @@ public class ListedRelease implements ListedEntity {
         this.name = name;
     }
 
-    public String getStatus() {
+    public EntityStatus getStatus() {
         return status;
     }
 
-    private void setStatus(String status) {
+    @Override
+    public String getDefinition() {
+        return getReleaseDefinition();
+    }
+
+    private void setStatus(EntityStatus status) {
         this.status = status;
     }
 
@@ -86,6 +92,11 @@ public class ListedRelease implements ListedEntity {
 
     public String getCreatedBy() {
         return createdBy;
+    }
+
+    @Override
+    public String getTime() {
+        return getCreatedOn();
     }
 
     private void setCreatedBy(String createdBy) {

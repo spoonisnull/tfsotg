@@ -1,5 +1,6 @@
 package com.zpaz.tfsotg.Build;
 
+import com.zpaz.tfsotg.Enums.EntityStatus;
 import com.zpaz.tfsotg.Interfaces.ListedEntity;
 import com.zpaz.tfsotg.Utils.DateTimeParser;
 import com.zpaz.tfsotg.Utils.JsonParser;
@@ -27,9 +28,9 @@ public class ListedBuild implements ListedEntity {
     private String createdBy;
     private String createdOn;
     private String startTime;
-    private String result;
+    private EntityStatus result;
 
-    private ListedBuild(int id, String buildNumber, String buildDefinition, String createdBy, String createdOn, String finishTime, String startTime, String result) {
+    private ListedBuild(int id, String buildNumber, String buildDefinition, String createdBy, String createdOn, String finishTime, String startTime, EntityStatus result) {
         this.buildNumber = buildNumber;
         this.buildDefinition = buildDefinition;
         this.id = id;
@@ -72,7 +73,7 @@ public class ListedBuild implements ListedEntity {
                 parser.getString(tfsBuildJson, "queueTime"),
                 parser.getString(tfsBuildJson, "finishTime"),
                 parser.getString(tfsBuildJson, "startTime"),
-                parser.getString(tfsBuildJson, "result"));
+                EntityStatus.valueOf(parser.getString(tfsBuildJson, "result")));
         return build;
     }
 
@@ -112,6 +113,26 @@ public class ListedBuild implements ListedEntity {
         return createdBy;
     }
 
+    @Override
+    public String getTime() {
+        return getStartTime();
+    }
+
+    @Override
+    public String getName() {
+        return getBuildNumber();
+    }
+
+    @Override
+    public EntityStatus getStatus() {
+        return getResult();
+    }
+
+    @Override
+    public String getDefinition() {
+        return getBuildDefinition();
+    }
+
     private void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
@@ -132,11 +153,11 @@ public class ListedBuild implements ListedEntity {
         this.startTime = startTime;
     }
 
-    public String getResult() {
+    public EntityStatus getResult() {
         return result;
     }
 
-    private void setResult(String result) {
+    private void setResult(EntityStatus result) {
         this.result = result;
     }
 }

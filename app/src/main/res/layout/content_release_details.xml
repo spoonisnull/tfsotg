@@ -50,13 +50,11 @@
             android:textStyle="bold"
             tools:text="created by, at" />
 
-        <LinearLayout
-            android:id="@+id/environmentsLayout"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/envRecView"
             android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical">
-
-        </LinearLayout>
+            android:layout_height="match_parent" />
 
     </LinearLayout>
+
 </android.support.v4.widget.NestedScrollView>

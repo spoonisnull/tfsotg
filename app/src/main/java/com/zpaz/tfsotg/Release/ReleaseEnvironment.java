@@ -1,6 +1,6 @@
 package com.zpaz.tfsotg.Release;
 
-import com.zpaz.tfsotg.Enums.EnvironmentStatus;
+import com.zpaz.tfsotg.Enums.EntityStatus;
 import com.zpaz.tfsotg.Utils.JsonParser;
 
 import org.json.JSONArray;
@@ -15,7 +15,7 @@ public class ReleaseEnvironment {
     private String id;
     private String releaseId;
     private String name;
-    private EnvironmentStatus status;
+    private EntityStatus status;
     private ReleaseStep[] steps;
 
     public String getId() {
@@ -42,11 +42,11 @@ public class ReleaseEnvironment {
         this.name = name;
     }
 
-    EnvironmentStatus getStatus() {
+    EntityStatus getStatus() {
         return status;
     }
 
-    private void setStatus(EnvironmentStatus status) {
+    private void setStatus(EntityStatus status) {
         this.status = status;
     }
 
@@ -74,7 +74,7 @@ public class ReleaseEnvironment {
         environment.setId(parser.getString(environmentJson,"id"));
         environment.setReleaseId(parser.getString(environmentJson,"releaseId"));
         environment.setName(parser.getString(environmentJson,"name"));
-        environment.setStatus(EnvironmentStatus.valueOf(environmentJson.getString("status")));
+        environment.setStatus(EntityStatus.valueOf(environmentJson.getString("status")));
         JSONArray releaseStepsJson = environmentJson.getJSONArray("deploySteps");
         ReleaseStep[] steps = new ReleaseStep[releaseStepsJson.length()];
         for(int i = 0; i < releaseStepsJson.length(); i ++){
