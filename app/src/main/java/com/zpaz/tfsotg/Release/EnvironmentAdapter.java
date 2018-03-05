@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.zpaz.tfsotg.R;
-import com.zpaz.tfsotg.Utils.ColoriseStatusText;
+import com.zpaz.tfsotg.Utils.ColorFunctions;
 
 import java.util.List;
 
@@ -57,13 +57,11 @@ public class EnvironmentAdapter extends RecyclerView.Adapter<EnvironmentAdapter.
         return environmentsList.size();
     }
 
-
-
     private TextView setStatusView(TextView statusView, ReleaseEnvironment environment){
         statusView.setText(String.valueOf(environment.getName()));
         statusView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         statusView.setTypeface(null, Typeface.BOLD);
         statusView.setTextColor(Color.WHITE);
-        return ColoriseStatusText.setTextBgColourMatchStatus(context, statusView, environment.getStatus());
+        return (TextView)ColorFunctions.setTextBgColourMatchStatus(context, statusView, environment.getStatus());
     }
 }

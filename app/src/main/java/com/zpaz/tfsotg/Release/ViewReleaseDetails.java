@@ -1,6 +1,5 @@
 package com.zpaz.tfsotg.Release;
 
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -24,13 +23,9 @@ import static com.zpaz.tfsotg.Release.DetailedRelease.GetDetailedReleaseFromJson
 
 public class ViewReleaseDetails extends AppCompatActivity {
 
-    private Context context;
     private DetailedRelease release = null;
     private TextView releaseDefinitionDisplay;
     private TextView releaseCreatedDisplay;
-    private RecyclerView recyclerView;
-    private EnvironmentAdapter adapter;
-    private List<ReleaseEnvironment> environmentList;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -41,21 +36,18 @@ public class ViewReleaseDetails extends AppCompatActivity {
         releaseDefinitionDisplay = findViewById(R.id.relDefDisplay);
         releaseCreatedDisplay = findViewById(R.id.relCreatedDisplay);
         setSupportActionBar(toolbar);
-        context = getApplicationContext();
 
-        String releaseAsString = String.valueOf(this.getIntent().getExtras().get("release"));
+        String detailedRelease = String.valueOf(this.getIntent().getExtras().get("detailedRelease"));
         try {
-            release = GetDetailedReleaseFromJson(releaseAsString);
+            release = GetDetailedReleaseFromJson(detailedRelease);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         setTopTextViews();
-        environmentList = new ArrayList<>();
+        List<ReleaseEnvironment> environmentList = new ArrayList<>();
         environmentList.addAll(Arrays.asList(release.getEnvironments()));
-
-        recyclerView = findViewById(R.id.envRecView);
-        adapter = new EnvironmentAdapter(this, environmentList);
-
+        RecyclerView recyclerView = findViewById(R.id.envRecView);
+        EnvironmentAdapter adapter = new EnvironmentAdapter(this, environmentList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());

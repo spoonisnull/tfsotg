@@ -10,16 +10,16 @@ import org.json.JSONObject;
 public class JsonParser {
 
     public String getString(JSONObject object, String key) throws JSONException {
-        if(object.has(key)){
-            return object.getString(key);
+        if((object != null) && object.has(key)){
+            return object.optString(key);
         } else {
             return "in progress";
         }
     }
 
     public int getInt(JSONObject object, String key) throws JSONException {
-        if(object.has(key)){
-            return object.getInt(key);
+        if((object != null) && object.has(key)){
+            return object.optInt(key);
         } else {
             return -1;
         }

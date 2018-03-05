@@ -6,12 +6,14 @@ package com.zpaz.tfsotg.Enums;
 
 public enum EntityStatus {
     succeeded,
+    completed,
+    active,
+    skipped,
     partiallySucceeded,
     notStarted,
     failed,
     canceled,
     rejected,
     inProgress,
-    active,
     abandoned,
 }

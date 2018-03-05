@@ -15,7 +15,6 @@ import com.zpaz.tfsotg.Enums.EntityStatus;
 import com.zpaz.tfsotg.Interfaces.ListedEntity;
 import com.zpaz.tfsotg.R;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -49,9 +48,9 @@ public class MainListAdapter extends ArrayAdapter<ListedEntity>{
         String statusText = " " + String.valueOf(status) + " ";
         buildStatus.setText(statusText);
         buildStatus.setTextColor(Color.WHITE);
-        ColoriseStatusText.setTextBgColourMatchStatus(context, buildStatus, status);
+        ColorFunctions.setTextBgColourMatchStatus(context, buildStatus, status);
 
-        TextView buildNo = rowView.findViewById(R.id.buildNo);
+        TextView buildNo = rowView.findViewById(R.id.buildDefDisplay);
         buildNo.setText(list.get(position).getName());
 
         TextView queuedBy = rowView.findViewById(R.id.queuedBy);

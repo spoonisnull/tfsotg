@@ -1,18 +1,22 @@
 package com.zpaz.tfsotg.Build;
 
-import com.zpaz.tfsotg.Enums.BuildTaskStates;
+import android.support.annotation.NonNull;
+
+import com.zpaz.tfsotg.Enums.EntityStatus;
 
 /**
  * Created by zsolt on 01/03/18.
  */
 
-public class BuildTask {
+public class BuildTask implements Comparable{
+    private int order;
     private String guid;
+    private String type;
     private String name;
     private String startTime;
     private String finishTime;
-    private int percentComplete;
-    private BuildTaskStates state;
+    private String percentComplete;
+    private EntityStatus status;
     private String result;
     private String workerName;
     private String taskType;
@@ -54,20 +58,16 @@ public class BuildTask {
         this.finishTime = finishTime;
     }
 
-    public int getPercentComplete() {
+    public String getPercentComplete() {
         return percentComplete;
     }
 
-    public void setPercentComplete(int percentComplete) {
+    public void setPercentComplete(String percentComplete) {
         this.percentComplete = percentComplete;
     }
 
-    public BuildTaskStates getState() {
-        return state;
-    }
-
-    public void setState(BuildTaskStates state) {
-        this.state = state;
+    public EntityStatus getState() {
+        return status;
     }
 
     public String getResult() {
@@ -100,5 +100,35 @@ public class BuildTask {
 
     public void setIssues(String[] issues) {
         this.issues = issues;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public EntityStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EntityStatus status) {
+        this.status = status;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @Override
+    public int compareTo(@NonNull Object o) {
+        BuildTask that = (BuildTask)o;
+        return this.getOrder() > that.getOrder() ? 1 : 0;
     }
 }

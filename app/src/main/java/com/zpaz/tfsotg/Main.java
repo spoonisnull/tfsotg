@@ -14,22 +14,18 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.zpaz.tfsotg.Build.ListedBuild;
 import com.zpaz.tfsotg.Build.ViewBuildDetails;
+import com.zpaz.tfsotg.Enums.QueryActions;
 import com.zpaz.tfsotg.Interfaces.ListedEntity;
 import com.zpaz.tfsotg.Release.ListedRelease;
 import com.zpaz.tfsotg.Release.ViewReleaseDetails;
-import com.zpaz.tfsotg.Enums.QueryActions;
 import com.zpaz.tfsotg.Utils.MainListAdapter;
 
 import org.json.JSONException;
@@ -43,21 +39,25 @@ import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 import static com.zpaz.tfsotg.Build.ListedBuild.GetTfsBuilds;
+import static com.zpaz.tfsotg.Enums.QueryActions.GetBuildDetails;
+import static com.zpaz.tfsotg.Enums.QueryActions.GetBuilds;
+import static com.zpaz.tfsotg.Enums.QueryActions.GetReleaseDetails;
+import static com.zpaz.tfsotg.Enums.QueryActions.GetReleases;
 import static com.zpaz.tfsotg.Release.ListedRelease.GetTfsReleases;
-import static com.zpaz.tfsotg.Enums.QueryActions.*;
 
 public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    String credentials;
-    String baseUrl;
-    String username;
-    ListView mainList;
-    ListAdapter listAdapter;
-    LinkedList queueList;
-    Context context;
-    SwipeRefreshLayout swipeRefresh;
-    QueryActions lastQuery;
-    int itemsToShow = 10;
+    private String credentials;
+    private String baseUrl;
+    private ListView mainList;
+    private ListAdapter listAdapter;
+    private LinkedList queueList;
+    private Context context;
+    private SwipeRefreshLayout swipeRefresh;
+    private QueryActions lastQuery;
+    private int itemsToShow = 20;
+    private ListedBuild selectedBuild;
+    private ListedRelease selectedRelease;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +66,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         setTitle("TFS on the go");
         credentials = this.getIntent().getExtras().get("Creds").toString();
         baseUrl = this.getIntent().getExtras().get("BaseUrl").toString();
-        username = this.getIntent().getExtras().get("UserName").toString();
+        String username = this.getIntent().getExtras().get("UserName").toString();
         context = this;
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -240,7 +240,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                         break;
                     case GetBuildDetails:
                         Intent viewBuildIntent = new Intent(getApplicationContext(), ViewBuildDetails.class);
-                        viewBuildIntent.putExtra("build", response);
+                        viewBuildIntent.putExtra("detailedBuild", response);
+                        viewBuildIntent.putExtra("buildDef", selectedBuild.getBuildDefinition());
+                        viewBuildIntent.putExtra("buildNo", selectedBuild.getBuildNumber());
+                        viewBuildIntent.putExtra("buildResult", String.valueOf(selectedBuild.getResult()));
+                        viewBuildIntent.putExtra("buildCreatedBy", selectedBuild.getCreatedBy());
                         startActivity(viewBuildIntent);
                         break;
                     case GetReleases:
@@ -249,7 +253,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                         break;
                     case GetReleaseDetails:
                         Intent viewReleaseIntent = new Intent(getApplicationContext(), ViewReleaseDetails.class);
-                        viewReleaseIntent.putExtra("release", response);
+                        viewReleaseIntent.putExtra("detailedRelease", response);
                         startActivity(viewReleaseIntent);
                         break;
                 }
@@ -259,15 +263,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
 
         private void updateView(final LinkedList list) throws JSONException {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-//                    listAdapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
-                    listAdapter = new MainListAdapter(context, R.layout.main_list_layout, list);
-                    addRelevantListenerToListView();
-                    changeTitle();
-                    mainList.setAdapter(listAdapter);
-                }
+            runOnUiThread(() -> {
+                listAdapter = new MainListAdapter(context, R.layout.main_list_layout, list);
+                addRelevantListenerToListView();
+                changeTitle();
+                mainList.setAdapter(listAdapter);
             });
         }
 
@@ -294,22 +294,16 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
 
         private void addReleaseDetailsListener(){
-            mainList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ListedRelease selectedRelease = (ListedRelease) queueList.get(position);
-                    new RequestFromTfs().execute(GetReleaseDetails, credentials, selectedRelease.getId());
-                }
+            mainList.setOnItemClickListener((parent, view, position, id) -> {
+                selectedRelease = (ListedRelease) queueList.get(position);
+                new RequestFromTfs().execute(GetReleaseDetails, credentials, selectedRelease.getId());
             });
         }
 
         private void addBuildDetailsListener(){
-            mainList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ListedBuild selectedBuild = (ListedBuild) queueList.get(position);
-                    new RequestFromTfs().execute(GetBuildDetails, credentials, String.valueOf(selectedBuild.getId()));
-                }
+            mainList.setOnItemClickListener((parent, view, position, id) -> {
+                selectedBuild = (ListedBuild) queueList.get(position);
+                new RequestFromTfs().execute(GetBuildDetails, credentials, String.valueOf(selectedBuild.getId()));
             });
         }
     }
