@@ -45,6 +45,10 @@ public class DetailedBuild implements DetailedEntity{
         return buildTasks;
     }
 
+    public void setBuildTasks(List<BuildTask> buildTasks) {
+        this.buildTasks = buildTasks;
+    }
+
     public DateTimeParser getQueuedDateTime() {
         return queuedDateTime;
     }
@@ -107,10 +111,6 @@ public class DetailedBuild implements DetailedEntity{
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public void setBuildTasks(List<BuildTask> buildTasks) {
-        this.buildTasks = buildTasks;
     }
 
     private List<BuildTask> GetBuildTasksFromJson(JSONObject buildJson) throws JSONException {
